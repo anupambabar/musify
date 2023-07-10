@@ -7,14 +7,12 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Artist;
 import com.musify.mapper.ArtistDataMapper;
 import com.musify.service.ArtistDetailsService;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Mono;
+import org.springframework.stereotype.Service;
 
-@Repository
+@Service
 public class ArtistDetailsServiceImpl implements ArtistDetailsService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
@@ -31,35 +29,29 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
     @Autowired
     ArtistDataMapper artistDataMapper;
 
-    @SneakyThrows
     @Override
-    public Mono<Artist> getArtistDetails(String mbid) {
+    public Artist getArtistDetails(String mbid) {
 
-        Mono<Artist> artist = Mono.just(new Artist());
+        Artist artist = new Artist();
 
         // Get Artist Details from MusicBrainz
-        Mono<MusicBrainzResponse> mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
+        MusicBrainzResponse mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
 
         if (null != mbResponse) {
             LOGGER.info("Artist Found");
 
             // Populate artist object with MusicBrainz data
-            artist = mbResponse.map(mbr -> {
-                return artistDataMapper.ARTIST_DATA_MAPPER.mapMBResponseToArtist(mbr);
-            });
+            artist = artistDataMapper.mapMBResponseToArtist(mbResponse);
 
             // Populate artist object with Wikipedia Description
-            wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+            artist = wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
 
             // Populate artist object with Cover Art Archive Data
-            coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+            artist = coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
 
         } else {
             LOGGER.info("Error Getting Artist Details");
-            artist.map(a -> {
-                a.setErrorOccurred(true);
-                return a;
-            });
+            artist.setErrorOccurred(true);
         }
         return artist;
     }

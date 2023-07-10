@@ -7,18 +7,16 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.dto.musicbrainz.ReleaseGroup;
 import com.musify.entity.Album;
 import com.musify.entity.Artist;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -29,80 +27,68 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    WebClient webClient;
-
     @Value("${coverart.api.url}")
     private String apiUrl;
 
 
     @Override
-    public Mono<Artist> getAlbumCoverArtDetails(Mono<Artist> artist, Mono<MusicBrainzResponse> mbResponse) {
+    public Artist getAlbumCoverArtDetails(Artist artist, MusicBrainzResponse mbResponse) {
 
         LOGGER.info("Fetching Album Cover Art Details from Cover Art Archive");
 
+        ArrayList<Image> images = new ArrayList<Image>();
+        String imageUrl = "";
         ArrayList<Album> albums = new ArrayList<Album>();
-        ArrayList<ReleaseGroup> releaseGroups = (ArrayList<ReleaseGroup>) mbResponse.subscribe(mbr -> mbr.getReleaseGroups());
 
-        if (null != releaseGroups && !releaseGroups.isEmpty()) {
+        if (null != mbResponse.getReleaseGroups() && !mbResponse.getReleaseGroups().isEmpty()) {
 
-            // Collect all ids from ReleaseGroup Collection
-            List<String> releaseGroupIds = releaseGroups.stream()
-                    .map(ReleaseGroup::getId).collect(Collectors.toList());
+            for (ReleaseGroup releaseGroup : mbResponse.getReleaseGroups()) {
 
-            Flux<Album> fluxAlbums = Flux.fromIterable(releaseGroups).flatMap(this::getAlbum);
-            fluxAlbums.collectList().subscribe(albums::addAll);
-            artist.map(a -> {
-                a.setAlbums(albums);
-                return a;
-            });
+                // Get Cover Art Archive Details
+                images = getCoverArtArchiveDetails(releaseGroup.getId());
 
+                // Get Front Image URL
+                imageUrl = getFrontImageUrl(images);
+
+                // Create Album Object
+                Album album = new Album();
+                album.setId(releaseGroup.getId());
+                album.setTitle(releaseGroup.getTitle());
+                album.setImageUrl(imageUrl);
+
+                albums.add(album);
+            }
+
+            artist.setAlbums(albums);
         }
 
         return artist;
     }
 
-    @SneakyThrows
-    private Mono<Album> getAlbum(ReleaseGroup releaseGroup) {
-
-        ArrayList<Image> images = new ArrayList<Image>();
-
-        // Get Cover Art Archive Details
-        Mono<Image> image = getCoverArtArchiveDetails(releaseGroup.getId());
-
-        // Create Album Object
-        Album album = new Album();
-        album.setId(releaseGroup.getId());
-        album.setTitle(releaseGroup.getTitle());
-        album.setImageUrl(image.toFuture().get().getImage());
-
-        return Mono.just(album);
-    }
-
-    private Image getFrontImageUrl(ArrayList<Image> images) {
+    private String getFrontImageUrl(ArrayList<Image> images) {
 
         Predicate<Image> frontImage = image -> image.getFront();
-        if (null != images && !images.stream().anyMatch(frontImage))
-            return new Image("", "No cover art found", true);
+        if (!images.stream().anyMatch(frontImage))
+            return "No cover art found";
         else
-            return images.stream().filter(frontImage).collect(Collectors.toList()).get(0);
+            return images.stream().filter(frontImage).collect(Collectors.toList()).get(0).getImage();
     }
 
-    private Mono<Image> getCoverArtArchiveDetails(String id) {
+    private ArrayList<Image> getCoverArtArchiveDetails(String id) {
 
         LOGGER.info("Fetching Album Image Details from Cover Art Archive");
 
         try {
-            LOGGER.info("Cover Art Archive API being called: " + apiUrl + id);
+            RestTemplate restTemplate = new RestTemplate();
+            final String uri = apiUrl + id;
+            LOGGER.info("Cover Art Archive API being called: " + uri);
 
-            return webClient.get()
-                    .uri(apiUrl + "{id}", id)
-                    .retrieve()
-                    .bodyToMono(CoverArtArchiveResponse.class)
-                    .timeout(Duration.ofMillis(10_000))
-                    .map(coverArtArchiveResponse -> {
-                        return getFrontImageUrl(coverArtArchiveResponse.getImages());
+            ResponseEntity<CoverArtArchiveResponse> response = restTemplate.exchange(
+                    uri, HttpMethod.GET, null,
+                    new ParameterizedTypeReference<CoverArtArchiveResponse>() {
                     });
+
+            return response.getBody().getImages();
 
         } catch (HttpStatusCodeException hsce) {
 
@@ -117,7 +103,7 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
                 image.setImage("Cover art API is not available");
             }
 
-            return Mono.just(image);
+            return new ArrayList<>(List.of(image));
         }
     }
 }
