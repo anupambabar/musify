@@ -1,10 +1,12 @@
 package com.musify.controller;
 
+import brave.sampler.Sampler;
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,14 +19,13 @@ import java.util.Optional;
 public class ArtistController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-    /*@Bean
-    public Sampler alwaysSampler() {
-        return Sampler.ALWAYS_SAMPLE;
-    }*/
-
     @Autowired
     ArtistDetailsService artistDetailsService;
+
+    @Bean
+    public Sampler alwaysSampler() {
+        return Sampler.ALWAYS_SAMPLE;
+    }
 
     @GetMapping(value = "/details/{mbid}", produces = "application/json")
     public Optional<Artist> getArtist(@PathVariable("mbid") String id) {

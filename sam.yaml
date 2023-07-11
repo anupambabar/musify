@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: '2023-07-10'
-Transform: AWS::Serverless-2023-07-30
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: Musify Springboot Application with Lambda.
 
 Resources:
