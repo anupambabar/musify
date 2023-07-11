@@ -14,14 +14,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
-public class RestExceptionHandler {
+public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
         LOGGER.debug("EXCEPTION occurred :: ", ex);
@@ -42,7 +43,7 @@ public class RestExceptionHandler {
         else
             error = error + "Service Unavailable";
 
-        return buildResponseEntity(new RestAPIError(HttpStatus.valueOf(ex.getStatusCode().toString()), error, ex));
+        return buildResponseEntity(new RestAPIError(ex.getStatusCode(), error, ex));
     }
 
     @ExceptionHandler(HttpStatusCodeException.class)
@@ -59,11 +60,11 @@ public class RestExceptionHandler {
         else
             error = error + "Failure Response Received";
 
-        return buildResponseEntity(new RestAPIError(HttpStatus.valueOf(ex.getStatusCode().toString()), error, ex));
+        return buildResponseEntity(new RestAPIError(ex.getStatusCode(), error, ex));
     }
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Object> handleAllExceptions(Exception ex) {
+    public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
         LOGGER.debug("EXCEPTION occurred :: ", ex);
         return buildResponseEntity(new RestAPIError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex));
     }
