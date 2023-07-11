@@ -33,9 +33,9 @@ For feature/resttemplate and feature/webclient branches
 `  5. OpenAPI URL for Documentation -> http://localhost:8081/musify-openapi-docs`
 
 
-For feature/awslambda branch
+For feature/awslambda branch with local profile
 
-`  1. To run the local profile -> mvn spring-boot:run -Dboot`
+`  1. Execute -> mvn spring-boot:run`
 
 `  2. URL to hit -> http://localhost:8081/musify/music-artist/details/f27ec8db-af05-4f36-916e-3d57f91ecf5e`
 
@@ -49,15 +49,15 @@ For feature/awslambda branch
 # build docker container:
 
 Assuming you have docker installed on your system, navigate to root directory of project and execute command  
-`docker build -f Dockerfile -t musify .`
+`docker build -f Dockerfile -t musify:test .`
 
 # Run the container:
 
-`docker run -p 8080:8080 musify`
+`docker run -p 9090:8080 musify:test`
 
 # Check if the API came up
 
-`192.168.99.100:8080/musify/music-artist/details`   
+`192.168.99.100:8080/musify/music-artist/details/f27ec8db-af05-4f36-916e-3d57f91ecf5e`   
 This IP is provided by docker when it runs. Most cases its this same one.
 
 # Docker stop Container
