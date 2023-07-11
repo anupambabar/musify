@@ -27,8 +27,8 @@ public class ArtistController {
     @Autowired
     ArtistDetailsService artistDetailsService;
 
-    @GetMapping(value = "/details/{id}", produces = "application/json")
-    public ResponseEntity<Mono<Artist>> getArtist(@PathVariable("id") String id) {
+    @GetMapping(value = "/details/{mbid}", produces = "application/json")
+    public ResponseEntity<Mono<Artist>> getArtist(@PathVariable("mbid") String id) {
 
         LOGGER.info("Retrieving Artist by MBID");
 

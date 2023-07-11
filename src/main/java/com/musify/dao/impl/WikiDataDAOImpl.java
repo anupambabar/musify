@@ -7,8 +7,10 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.dto.musicbrainz.Relation;
 import com.musify.dto.wikidata.SiteLink;
 import com.musify.entity.Artist;
+import com.musify.mapper.ArtistDataMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -29,17 +31,28 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    ArtistDataMapper artistDataMapper;
+
     @Value("${wikipedia.api.url}")
     private String apiUrl;
 
     @Override
-    public Mono<Artist> getArtistDetailsFromWD(Mono<Artist> artist, Mono<MusicBrainzResponse> mbResponse) {
+    public Mono<Artist> getArtistDetailsFromWD(Mono<MusicBrainzResponse> mbResponse) {
 
         LOGGER.info("Get Artist Wiki Details");
 
+        return mbResponse.map(mbr -> {
+            Artist descArt = new Artist();
+            descArt.setDescription(getArtistDescription(mbr));
+            return descArt;
+        });
+    }
+
+    private String getArtistDescription(MusicBrainzResponse mbResponse) {
+
         // Get Artist WikiData Relation
-        // Relation relation = (Relation) mbResponse.subscribe(mbr -> getArtistWikiDataRelation(mbr.getRelations()));
-        Relation relation = (Relation) mbResponse.subscribe(mbr -> getArtistWikiDataRelation(mbr.getRelations()));
+        Relation relation = getArtistWikiDataRelation(mbResponse.getRelations());
 
         if (null != relation.getUrl() && null != relation.getUrl().getResource()
                 && !relation.getUrl().getResource().isEmpty()
@@ -55,18 +68,11 @@ public class WikiDataDAOImpl implements WikiDataDAO {
             SiteLink siteLink = getSiteLinkData(wikiDataAPIUrl, entityId);
 
             // Get Wikipedia Description and Assign Description to Artist
-            artist.map(a -> {
-                a.setDescription(getDescFromWikiLink(siteLink));
-                return a;
-            });
-        } else {
-            artist.map(a -> {
-                a.setDescription("Description Not Found");
-                return a;
-            });
-        }
+            return getDescFromWikiLink(siteLink);
 
-        return artist;
+        } else {
+            return "Description Not Found";
+        }
     }
 
     private Relation getArtistWikiDataRelation(ArrayList<Relation> relations) {

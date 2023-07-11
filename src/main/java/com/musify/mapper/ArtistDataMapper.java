@@ -20,4 +20,6 @@ public interface ArtistDataMapper {
     @Mapping(source = "country", target = "country")
     @Mapping(source = "disambiguation", target = "disambiguation")
     Artist mapMBResponseToArtist(MusicBrainzResponse mbResponse);
+
+    Artist mapArtistToArtist(Artist artist);
 }
