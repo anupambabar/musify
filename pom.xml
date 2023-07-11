@@ -21,6 +21,8 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <jacoco-maven-plugin.version>0.8.6</jacoco-maven-plugin.version>
         <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
+
+        <start-class>com.musify.MusifyApplication</start-class>
     </properties>
     <dependencies>
         <dependency>
@@ -112,9 +114,7 @@
         <profile>
             <id>boot</id>
             <activation>
-                <property>
-                    <name>boot</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -123,6 +123,7 @@
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <configuration>
                             <mainClass>com.musify.MusifyApplication</mainClass>
+                            <layout>JAR</layout>
                         </configuration>
                         <executions>
                             <execution>
@@ -181,9 +182,11 @@
             </build>
         </profile>
         <profile>
-            <id>default</id>
+            <id>lambda</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>lambda</name>
+                </property>
             </activation>
             <build>
                 <plugins>

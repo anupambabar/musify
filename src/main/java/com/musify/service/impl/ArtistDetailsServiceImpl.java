@@ -5,7 +5,6 @@ import com.musify.dao.MusicBrainzDAO;
 import com.musify.dao.WikiDataDAO;
 import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Artist;
-import com.musify.mapper.ArtistDataMapper;
 import com.musify.service.ArtistDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +25,6 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
     @Autowired
     CoverArtArchiveDAO coverArtArchiveDAO;
 
-    @Autowired
-    ArtistDataMapper artistDataMapper;
-
     @Override
     public Artist getArtistDetails(String mbid) {
 
@@ -41,7 +37,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
             LOGGER.info("Artist Found");
 
             // Populate artist object with MusicBrainz data
-            artist = artistDataMapper.mapMBResponseToArtist(mbResponse);
+            artist = mapMBResponseToArtist(mbResponse);
 
             // Populate artist object with Wikipedia Description
             artist = wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
@@ -53,6 +49,17 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
             LOGGER.info("Error Getting Artist Details");
             artist.setErrorOccurred(true);
         }
+        return artist;
+    }
+
+    private Artist mapMBResponseToArtist(MusicBrainzResponse mbResponse) {
+
+        Artist artist = new Artist();
+        artist.setMbid(mbResponse.getId());
+        artist.setName(mbResponse.getName());
+        artist.setGender(mbResponse.getGender());
+        artist.setCountry(mbResponse.getCountry());
+        artist.setDisambiguation(mbResponse.getDisambiguation());
         return artist;
     }
 }
