@@ -53,12 +53,11 @@ Assuming you have docker installed on your system, navigate to root directory of
 
 # Run the container:
 
-`docker run -p 9090:8080 musify:test`
+`docker run -p 8081:8081 musify:test`
 
 # Check if the API came up
 
-`192.168.99.100:8080/musify/music-artist/details/f27ec8db-af05-4f36-916e-3d57f91ecf5e`   
-This IP is provided by docker when it runs. Most cases its this same one.
+`localhost:8081/musify/music-artist/details/f27ec8db-af05-4f36-916e-3d57f91ecf5e`   
 
 # Docker stop Container
 
