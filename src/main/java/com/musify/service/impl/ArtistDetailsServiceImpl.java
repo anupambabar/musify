@@ -41,7 +41,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
             LOGGER.info("Artist Found");
 
             // Populate artist object with MusicBrainz data
-            artist = artistDataMapper.ARTIST_DATA_MAPPER.mapMBResponseToArtist(mbResponse);
+            artist = artistDataMapper.mapMBResponseToArtist(mbResponse);
 
             // Populate artist object with Wikipedia Description
             artist = wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
