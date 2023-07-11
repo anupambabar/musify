@@ -60,14 +60,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
-<<<<<<< HEAD
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-springboot2</artifactId>
             <version>1.9.3</version>
         </dependency>
         <dependency>
-=======
->>>>>>> 4b94557cef2ff646862f02e2676c3908e820812c
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.4.0</version>
