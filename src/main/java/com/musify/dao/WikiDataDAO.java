@@ -7,5 +7,5 @@ import reactor.core.publisher.Mono;
 @FunctionalInterface
 public interface WikiDataDAO {
 
-    Mono<Artist> getArtistDetailsFromWD(Mono<Artist> artist, Mono<MusicBrainzResponse> mbResponse);
+    Mono<Artist> getArtistDetailsFromWD(Mono<MusicBrainzResponse> mbResponse);
 }

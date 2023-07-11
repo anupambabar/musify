@@ -7,5 +7,5 @@ import reactor.core.publisher.Mono;
 @FunctionalInterface
 public interface CoverArtArchiveDAO {
 
-    Mono<Artist> getAlbumCoverArtDetails(Mono<Artist> artist, Mono<MusicBrainzResponse> mbResponse);
+    Mono<Artist> getAlbumCoverArtDetails(Mono<MusicBrainzResponse> mbResponse);
 }

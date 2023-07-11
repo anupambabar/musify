@@ -35,7 +35,10 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
     @Override
     public Mono<Artist> getArtistDetails(String mbid) {
 
-        Mono<Artist> artist = Mono.just(new Artist());
+        Artist artist = new Artist();
+        Mono<Artist> mbArtist = Mono.just(new Artist());
+        Mono<Artist> descArtist = Mono.just(new Artist());
+        Mono<Artist> caArtist = Mono.just(new Artist());
 
         // Get Artist Details from MusicBrainz
         Mono<MusicBrainzResponse> mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
@@ -44,23 +47,33 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
             LOGGER.info("Artist Found");
 
             // Populate artist object with MusicBrainz data
-            artist = mbResponse.map(mbr -> {
+            mbArtist = mbResponse.map(mbr -> {
                 return artistDataMapper.ARTIST_DATA_MAPPER.mapMBResponseToArtist(mbr);
             });
 
             // Populate artist object with Wikipedia Description
-            wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+            descArtist = wikiDataDAO.getArtistDetailsFromWD(mbResponse);
 
             // Populate artist object with Cover Art Archive Data
-            coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+            caArtist = coverArtArchiveDAO.getAlbumCoverArtDetails(mbResponse);
+
+            return Mono.zip(mbArtist, descArtist, caArtist).flatMap(data -> {
+                artist.setMbid(data.getT1().getMbid());
+                artist.setName(data.getT1().getName());
+                artist.setGender(data.getT1().getGender());
+                artist.setCountry(data.getT1().getCountry());
+                artist.setDisambiguation(data.getT1().getDisambiguation());
+                artist.setDescription(data.getT2().getDescription());
+                
+                artist.setAlbums(data.getT3().getAlbums());
+
+                return Mono.just(artist);
+            });
 
         } else {
             LOGGER.info("Error Getting Artist Details");
-            artist.map(a -> {
-                a.setErrorOccurred(true);
-                return a;
-            });
+            artist.setErrorOccurred(true);
+            return Mono.just(artist);
         }
-        return artist;
     }
 }
