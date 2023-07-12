@@ -9,17 +9,16 @@ import com.musify.dto.wikidata.SiteLink;
 import com.musify.entity.Artist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -28,48 +27,36 @@ import java.util.stream.Collectors;
 public class WikiDataDAOImpl implements WikiDataDAO {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    RestTemplate restTemplate;
 
     @Value("${wikipedia.api.url}")
     private String apiUrl;
 
     @Override
-    public Mono<Artist> getArtistDetailsFromWD(Mono<Artist> artist, Mono<MusicBrainzResponse> mbResponse) {
+    public Artist getArtistDetailsFromWD(Artist artist, MusicBrainzResponse mbResponse) {
 
         LOGGER.info("Get Artist Wiki Details");
 
         // Get Artist WikiData Relation
-        // Relation relation = (Relation) mbResponse.subscribe(mbr -> getArtistWikiDataRelation(mbr.getRelations()));
-        Relation relation = (Relation) mbResponse.subscribe(mbr -> getArtistWikiDataRelation(mbr.getRelations()));
+        Relation relation = getArtistWikiDataRelation(mbResponse);
 
-        if (null != relation.getUrl() && null != relation.getUrl().getResource()
-                && !relation.getUrl().getResource().isEmpty()
-                && relation.getUrl().getResource().contains("/")) {
+        // Get entityId
+        String entityId = relation.getUrl().getResource().substring(relation.getUrl().getResource().lastIndexOf('/') + 1);
 
-            // Get entityId
-            String entityId = relation.getUrl().getResource().substring(relation.getUrl().getResource().lastIndexOf('/') + 1);
+        // Get Artist WikiData URL
+        String wikiDataAPIUrl = getWIkiDataAPIURL(relation, entityId);
 
-            // Get Artist WikiData URL
-            String wikiDataAPIUrl = getWIkiDataAPIURL(relation, entityId);
+        // Get SiteLink Data
+        SiteLink siteLink = getSiteLinkData(wikiDataAPIUrl, entityId);
 
-            // Get SiteLink Data
-            SiteLink siteLink = getSiteLinkData(wikiDataAPIUrl, entityId);
-
-            // Get Wikipedia Description and Assign Description to Artist
-            artist.map(a -> {
-                a.setDescription(getDescFromWikiLink(siteLink));
-                return a;
-            });
-        } else {
-            artist.map(a -> {
-                a.setDescription("Description Not Found");
-                return a;
-            });
-        }
+        // Get Wikipedia Description and Assign Description to Artist
+        artist.setDescription(getDescFromWikiLink(siteLink));
 
         return artist;
     }
 
-    private Relation getArtistWikiDataRelation(ArrayList<Relation> relations) {
+    private Relation getArtistWikiDataRelation(MusicBrainzResponse mbResponse) {
 
         LOGGER.info("Fetching WikiData Relation");
 
@@ -77,20 +64,25 @@ public class WikiDataDAOImpl implements WikiDataDAO {
         Predicate<Relation> relationTypeNotNull = relation -> Objects.nonNull(relation.getType());
         Predicate<Relation> relationType = relation -> relation.getType().equalsIgnoreCase("wikidata");
 
-        if (!relations.stream().anyMatch(relationNotNull.and(relationTypeNotNull.and(relationType))))
-            return new Relation();
-        else
-            return relations
-                    .stream()
-                    .filter(relationNotNull.and(relationTypeNotNull.and(relationType)))
-                    .collect(Collectors.toList())
-                    .get(0);
+        return mbResponse.getRelations()
+                .stream()
+                .filter(relationNotNull.and(relationTypeNotNull.and(relationType)))
+                .collect(Collectors.toList())
+                .get(0);
     }
 
     private String getWIkiDataAPIURL(Relation relation, String entityId) {
 
         LOGGER.info("Fetching WikiData API URL");
-        return relation.getUrl().getResource().replace(entityId, "Special:EntityData/" + entityId + ".json");
+
+        String wikiDataAPIUrl = "";
+
+        if (null != relation && null != relation.getUrl() && null != relation.getUrl().getResource()) {
+            String url = relation.getUrl().getResource();
+            wikiDataAPIUrl = url.replace(entityId, "Special:EntityData/" + entityId + ".json");
+        }
+
+        return wikiDataAPIUrl;
     }
 
     private SiteLink getSiteLinkData(String wikiDataAPIUrl, String entityId) {
@@ -118,7 +110,6 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
         LOGGER.info("Fetching Description from Wikipedia");
 
-        RestTemplate restTemplate = new RestTemplate();
         ObjectMapper mapper = new ObjectMapper();
         String description = "";
 

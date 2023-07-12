@@ -2,7 +2,7 @@ package com.musify.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class RestAPIError {
 
-    private HttpStatus status;
+    private HttpStatusCode status;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime timestamp;
     private String message;
@@ -21,19 +21,19 @@ public class RestAPIError {
         timestamp = LocalDateTime.now();
     }
 
-    RestAPIError(HttpStatus status) {
+    RestAPIError(HttpStatusCode status) {
         this();
         this.status = status;
     }
 
-    RestAPIError(HttpStatus status, Throwable ex) {
+    RestAPIError(HttpStatusCode status, Throwable ex) {
         this();
         this.status = status;
         this.message = "Unexpected error";
         this.debugMessage = ex.getLocalizedMessage();
     }
 
-    RestAPIError(HttpStatus status, String message, Throwable ex) {
+    RestAPIError(HttpStatusCode status, String message, Throwable ex) {
         this();
         this.status = status;
         this.message = message;

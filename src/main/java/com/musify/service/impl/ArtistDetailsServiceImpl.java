@@ -5,16 +5,20 @@ import com.musify.dao.MusicBrainzDAO;
 import com.musify.dao.WikiDataDAO;
 import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Artist;
-import com.musify.mapper.ArtistDataMapper;
 import com.musify.service.ArtistDetailsService;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Mono;
+import org.springframework.stereotype.Service;
 
-@Repository
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
+
+@Service
 public class ArtistDetailsServiceImpl implements ArtistDetailsService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
@@ -28,39 +32,85 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
     @Autowired
     CoverArtArchiveDAO coverArtArchiveDAO;
 
-    @Autowired
-    ArtistDataMapper artistDataMapper;
-
-    @SneakyThrows
     @Override
-    public Mono<Artist> getArtistDetails(String mbid) {
+    public Artist getArtistDetails(String mbid) {
 
-        Mono<Artist> artist = Mono.just(new Artist());
+        Artist artist = new Artist();
 
         // Get Artist Details from MusicBrainz
-        Mono<MusicBrainzResponse> mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
+        MusicBrainzResponse mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
 
         if (null != mbResponse) {
             LOGGER.info("Artist Found");
 
+            Instant start = Instant.now();
+
             // Populate artist object with MusicBrainz data
-            artist = mbResponse.map(mbr -> {
-                return artistDataMapper.ARTIST_DATA_MAPPER.mapMBResponseToArtist(mbr);
-            });
+            artist = mapMBResponseToArtist(mbResponse);
 
-            // Populate artist object with Wikipedia Description
-            wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+            // Execute further methods concurrently
+            artist = executeConcurrent(artist, mbResponse);
 
-            // Populate artist object with Cover Art Archive Data
-            coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+            Instant finish = Instant.now();
+            LOGGER.info("Processing Time : " + Duration.between(start, finish).toMillis());
 
         } else {
             LOGGER.info("Error Getting Artist Details");
-            artist.map(a -> {
-                a.setErrorOccurred(true);
-                return a;
-            });
+            artist.setErrorOccurred(true);
         }
+        return artist;
+    }
+
+    private Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        try {
+            Callable<Artist> wikiCall = new Callable() {
+                @Override
+                public Artist call() throws Exception {
+                    return wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+                }
+            };
+
+            Callable<Artist> coverArtCall = new Callable() {
+                @Override
+                public Artist call() throws Exception {
+                    return coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+                }
+            };
+
+
+            Callable<Artist> callableTask = () -> {
+                TimeUnit.MILLISECONDS.sleep(300);
+                return new Artist();
+            };
+
+            List<Callable<Artist>> callableTasks = Arrays.asList(wikiCall, coverArtCall);
+            List<Future<Artist>> futures = executorService.invokeAll(callableTasks);
+
+            if (null != futures && !futures.isEmpty()) {
+                artist.setDescription(futures.get(0).get() != null ?
+                        futures.get(0).get().getDescription() : "Description not found");
+                artist.setAlbums(futures.get(1).get() != null ?
+                        futures.get(1).get().getAlbums() : new ArrayList<>());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            new RuntimeException(e);
+        } finally {
+            executorService.shutdown();
+        }
+
+        return artist;
+    }
+
+    private Artist mapMBResponseToArtist(MusicBrainzResponse mbResponse) {
+
+        Artist artist = new Artist();
+        artist.setMbid(mbResponse.getId());
+        artist.setName(mbResponse.getName());
+        artist.setGender(mbResponse.getGender());
+        artist.setCountry(mbResponse.getCountry());
+        artist.setDisambiguation(mbResponse.getDisambiguation());
         return artist;
     }
 }
