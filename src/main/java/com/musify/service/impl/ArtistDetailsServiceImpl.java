@@ -11,6 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
+
 @Service
 public class ArtistDetailsServiceImpl implements ArtistDetailsService {
 
@@ -36,19 +43,63 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
         if (null != mbResponse) {
             LOGGER.info("Artist Found");
 
+            Instant start = Instant.now();
+
             // Populate artist object with MusicBrainz data
             artist = mapMBResponseToArtist(mbResponse);
 
-            // Populate artist object with Wikipedia Description
-            artist = wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+            // Execute further methods concurrently
+            artist = executeConcurrent(artist, mbResponse);
 
-            // Populate artist object with Cover Art Archive Data
-            artist = coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+            Instant finish = Instant.now();
+            LOGGER.info("Processing Time : " + Duration.between(start, finish).toMillis());
 
         } else {
             LOGGER.info("Error Getting Artist Details");
             artist.setErrorOccurred(true);
         }
+        return artist;
+    }
+
+    private Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        try {
+            Callable<Artist> wikiCall = new Callable() {
+                @Override
+                public Artist call() throws Exception {
+                    return wikiDataDAO.getArtistDetailsFromWD(artist, mbResponse);
+                }
+            };
+
+            Callable<Artist> coverArtCall = new Callable() {
+                @Override
+                public Artist call() throws Exception {
+                    return coverArtArchiveDAO.getAlbumCoverArtDetails(artist, mbResponse);
+                }
+            };
+
+
+            Callable<Artist> callableTask = () -> {
+                TimeUnit.MILLISECONDS.sleep(300);
+                return new Artist();
+            };
+
+            List<Callable<Artist>> callableTasks = Arrays.asList(wikiCall, coverArtCall);
+            List<Future<Artist>> futures = executorService.invokeAll(callableTasks);
+
+            if (null != futures && !futures.isEmpty()) {
+                artist.setDescription(futures.get(0).get() != null ?
+                        futures.get(0).get().getDescription() : "Description not found");
+                artist.setAlbums(futures.get(1).get() != null ?
+                        futures.get(1).get().getAlbums() : new ArrayList<>());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            new RuntimeException(e);
+        } finally {
+            executorService.shutdown();
+        }
+
         return artist;
     }
 

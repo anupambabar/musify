@@ -2,6 +2,7 @@ package com.musify.controller;
 
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
+import com.musify.service.RedisService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +22,10 @@ class ArtistControllerTest {
 
     @MockBean
     ArtistDetailsService artistDetailsService;
+
+    @MockBean
+    RedisService redisService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -36,6 +41,7 @@ class ArtistControllerTest {
 
 
         given(artistDetailsService.getArtistDetails(mbid)).willReturn(artist);
+        given(redisService.getValue(mbid)).willReturn(artist);
 
         // when -  action or the behaviour that we are going test
         ResultActions response = mockMvc.perform(get("/musify/music-artist/details/{id}", mbid));

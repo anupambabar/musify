@@ -9,6 +9,7 @@ import com.musify.dto.wikidata.SiteLink;
 import com.musify.entity.Artist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
 public class WikiDataDAOImpl implements WikiDataDAO {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    RestTemplate restTemplate;
 
     @Value("${wikipedia.api.url}")
     private String apiUrl;
@@ -107,7 +110,6 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
         LOGGER.info("Fetching Description from Wikipedia");
 
-        RestTemplate restTemplate = new RestTemplate();
         ObjectMapper mapper = new ObjectMapper();
         String description = "";
 
