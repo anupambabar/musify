@@ -7,6 +7,7 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.dto.musicbrainz.Relation;
 import com.musify.dto.wikidata.SiteLink;
 import com.musify.entity.Artist;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,6 +107,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
         return siteLink;
     }
 
+    @CircuitBreaker(name = "musifycircuitbreakerclient")
     private String getDescFromWikiLink(SiteLink siteLink) {
 
         LOGGER.info("Fetching Description from Wikipedia");

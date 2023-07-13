@@ -7,6 +7,7 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.dto.musicbrainz.ReleaseGroup;
 import com.musify.entity.Album;
 import com.musify.entity.Artist;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
     private String apiUrl;
 
     @Override
+    @CircuitBreaker(name = "musifycircuitbreakerclient")
     public Artist getAlbumCoverArtDetails(Artist artist, MusicBrainzResponse mbResponse) {
 
         LOGGER.info("Fetching Album Cover Art Details from Cover Art Archive");

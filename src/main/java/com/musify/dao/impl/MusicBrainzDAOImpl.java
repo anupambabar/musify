@@ -2,6 +2,7 @@ package com.musify.dao.impl;
 
 import com.musify.dao.MusicBrainzDAO;
 import com.musify.dto.musicbrainz.MusicBrainzResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ public class MusicBrainzDAOImpl implements MusicBrainzDAO {
     private String format;
 
     @Override
+    @CircuitBreaker(name = "musifycircuitbreakerclient")
     public MusicBrainzResponse getArtistDetailsFromMBz(String mbid) {
 
         LOGGER.info("Fetching Artist Details from MusicBrainz");

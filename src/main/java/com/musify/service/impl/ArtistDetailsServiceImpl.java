@@ -6,6 +6,7 @@ import com.musify.dao.WikiDataDAO;
 import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
         return artist;
     }
 
+    @Retry(name = "musifyretryclient")
     public Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
 
         ExecutorService executorService = Executors.newCachedThreadPool();
