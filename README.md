@@ -13,6 +13,8 @@ Project to get information on Artists and their work!
 
 `Redis -> Used for caching`
 
+`Resilience4j -> CircuitBreaker for external API calls and Retry for retrying in case of certain exceptions`
+
 `Actuator -> Used to expose operational and monitoring information about a live Spring boot application`
 
 `Micormeter/Zipkin -> Used to add TraceId/SpanId in loggers`
@@ -34,6 +36,11 @@ Project to get information on Artists and their work!
 # Run Tests :
 
 `mvn clean test`
+
+# Test cases included
+`Standalone test cases -> MusifyApplicationTests.java, ArtistControllerTest.java, ArtistDetailsServiceTest.java, RestExceptionHandlerTest.java`
+
+`Integration test case -> ArtistControllerIntegrationTest.java`
 
 # Build your project :
 
