@@ -27,7 +27,7 @@ Project to get information on Artists and their work!
 
 # Clone the project to your local directory
 
-`git clone https://github.com/anupambabar/musify.git
+`git clone https://github.com/anupambabar/musify.git`
 
 # Select Branch
 
