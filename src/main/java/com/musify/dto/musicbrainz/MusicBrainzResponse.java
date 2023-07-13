@@ -1,10 +1,7 @@
 package com.musify.dto.musicbrainz;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +10,7 @@ import java.util.ArrayList;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class MusicBrainzResponse implements Serializable {
 
     private String id;

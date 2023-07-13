@@ -61,7 +61,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
         return artist;
     }
 
-    private Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
+    public Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
 
         ExecutorService executorService = Executors.newCachedThreadPool();
         try {
@@ -103,7 +103,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
         return artist;
     }
 
-    private Artist mapMBResponseToArtist(MusicBrainzResponse mbResponse) {
+    public Artist mapMBResponseToArtist(MusicBrainzResponse mbResponse) {
 
         Artist artist = new Artist();
         artist.setMbid(mbResponse.getId());

@@ -36,7 +36,7 @@ public class ArtistController {
     }
 
     @GetMapping(value = "/details/{mbid}", produces = "application/json")
-    public Optional<Artist> getArtist(@PathVariable("mbid") String id) {
+    public Optional<Artist> getArtist(@PathVariable("mbid") String id) throws Exception {
 
         Artist artist = null;
         LOGGER.info("Retrieving Artist by MBID");
