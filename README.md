@@ -31,6 +31,10 @@ Project to get information on Artists and their work!
 
 `git checkout development`
 
+# Run Tests :
+
+`mvn clean test`
+
 # Build your project :
 
 `mvn clean install`
