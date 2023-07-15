@@ -3,6 +3,7 @@ package com.musify.service.impl;
 import com.google.gson.Gson;
 import com.musify.entity.Artist;
 import com.musify.service.RedisService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class RedisServiceImpl implements RedisService {
 

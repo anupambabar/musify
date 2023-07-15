@@ -14,7 +14,6 @@ class ArtistControllerIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
     @LocalServerPort
     private int randomServerPort;
 

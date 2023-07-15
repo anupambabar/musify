@@ -4,8 +4,7 @@ import brave.sampler.Sampler;
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
 import com.musify.service.RedisService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/musify/music-artist")
 public class ArtistController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
     @Autowired
     ArtistDetailsService artistDetailsService;
 
@@ -36,20 +35,24 @@ public class ArtistController {
     }
 
     @GetMapping(value = "/details/{mbid}", produces = "application/json")
-    public Optional<Artist> getArtist(@PathVariable("mbid") String id) throws Exception {
+    public Optional<Artist> getArtist(@PathVariable("mbid") String mbid) throws Exception {
 
         Artist artist = null;
-        LOGGER.info("Retrieving Artist by MBID");
+        log.info("Retrieving Artist by MBID");
 
         if (redisEnabled) {
-            if (null != redisService.getValue(id)) {
-                artist = redisService.getValue(id);
+            log.info("Redis is Configured. Getting Data from Cache for :: " + mbid);
+            if (null != redisService.getValue(mbid)) {
+                log.info("Data FOUND in Cache for :: " + mbid);
+                artist = redisService.getValue(mbid);
             } else {
-                artist = artistDetailsService.getArtistDetails(id);
-                redisService.setValue(id, artist);
+                log.info("Data NOT FOUND in Cache for :: " + mbid);
+                artist = artistDetailsService.getArtistDetails(mbid);
+                redisService.setValue(mbid, artist);
             }
         } else {
-            artist = artistDetailsService.getArtistDetails(id);
+            log.info("Redis Not Configured. Calling Actual Service");
+            artist = artistDetailsService.getArtistDetails(mbid);
         }
 
         return Optional.ofNullable(artist);

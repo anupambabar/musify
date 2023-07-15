@@ -7,8 +7,7 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
 import io.github.resilience4j.retry.annotation.Retry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
+@Slf4j
 @Service
 public class ArtistDetailsServiceImpl implements ArtistDetailsService {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     MusicBrainzDAO musicBrainzDAO;
@@ -34,6 +32,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
     CoverArtArchiveDAO coverArtArchiveDAO;
 
     @Override
+    @Retry(name = "musifyretryclient")
     public Artist getArtistDetails(String mbid) {
 
         Artist artist = new Artist();
@@ -42,7 +41,7 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
         MusicBrainzResponse mbResponse = musicBrainzDAO.getArtistDetailsFromMBz(mbid);
 
         if (null != mbResponse) {
-            LOGGER.info("Artist Found");
+            log.info("Artist Found");
 
             Instant start = Instant.now();
 
@@ -53,16 +52,15 @@ public class ArtistDetailsServiceImpl implements ArtistDetailsService {
             artist = executeConcurrent(artist, mbResponse);
 
             Instant finish = Instant.now();
-            LOGGER.info("Processing Time : " + Duration.between(start, finish).toMillis());
+            log.info("Processing Time : " + Duration.between(start, finish).toMillis());
 
         } else {
-            LOGGER.info("Error Getting Artist Details");
+            log.info("Error Getting Artist Details");
             artist.setErrorOccurred(true);
         }
         return artist;
     }
 
-    @Retry(name = "musifyretryclient")
     public Artist executeConcurrent(Artist artist, MusicBrainzResponse mbResponse) {
 
         ExecutorService executorService = Executors.newCachedThreadPool();

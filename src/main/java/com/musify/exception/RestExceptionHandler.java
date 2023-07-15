@@ -1,8 +1,7 @@
 package com.musify.exception;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -15,17 +14,16 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+@Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
     @ExceptionHandler(ResponseStatusException.class)
     protected ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, HandlerMethod handlerMethod) {
 
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
 
         String error = "Malformed request";
         return buildResponseEntity(new RestAPIError(HttpStatus.BAD_REQUEST, error, ex));
@@ -34,8 +32,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(HttpServerErrorException.class)
     public final ResponseEntity<Object> handleHttpServerErrorException(HttpServerErrorException ex, HandlerMethod handlerMethod) {
 
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
 
         String error = "";
 
@@ -50,8 +48,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(HttpStatusCodeException.class)
     public final ResponseEntity<Object> handleHttpStatusCodeException(HttpStatusCodeException ex, HandlerMethod handlerMethod) {
 
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
 
         String error = "";
 
@@ -68,8 +66,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<Object> handleAllExceptions(Exception ex, HandlerMethod handlerMethod) {
 
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
-        LOGGER.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION THROWN From :: Class:" + handlerMethod.getBean().getClass() + " : Method:" + handlerMethod.getMethod());
+        log.debug(">>>>>>>>>>>>>>> EXCEPTION STACKTRACE :: ", ex);
 
         return buildResponseEntity(new RestAPIError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex));
     }

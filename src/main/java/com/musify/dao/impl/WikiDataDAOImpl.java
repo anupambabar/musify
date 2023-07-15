@@ -8,8 +8,7 @@ import com.musify.dto.musicbrainz.Relation;
 import com.musify.dto.wikidata.SiteLink;
 import com.musify.entity.Artist;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,10 +23,10 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 public class WikiDataDAOImpl implements WikiDataDAO {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
     @Autowired
     RestTemplate restTemplate;
 
@@ -37,7 +36,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
     @Override
     public Artist getArtistDetailsFromWD(Artist artist, MusicBrainzResponse mbResponse) {
 
-        LOGGER.info("Get Artist Wiki Details");
+        log.info("Get Artist Wiki Details");
 
         // Get Artist WikiData Relation
         Relation relation = getArtistWikiDataRelation(mbResponse);
@@ -59,7 +58,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
     private Relation getArtistWikiDataRelation(MusicBrainzResponse mbResponse) {
 
-        LOGGER.info("Fetching WikiData Relation");
+        log.info("Fetching WikiData Relation");
 
         Predicate<Relation> relationNotNull = relation -> Objects.nonNull(relation);
         Predicate<Relation> relationTypeNotNull = relation -> Objects.nonNull(relation.getType());
@@ -74,7 +73,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
     private String getWIkiDataAPIURL(Relation relation, String entityId) {
 
-        LOGGER.info("Fetching WikiData API URL");
+        log.info("Fetching WikiData API URL");
 
         String wikiDataAPIUrl = "";
 
@@ -88,7 +87,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
 
     private SiteLink getSiteLinkData(String wikiDataAPIUrl, String entityId) {
 
-        LOGGER.info("Fetching SiteLink Data");
+        log.info("Fetching SiteLink Data");
 
         SiteLink siteLink = new SiteLink();
         try {
@@ -110,7 +109,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
     @CircuitBreaker(name = "musifycircuitbreakerclient")
     private String getDescFromWikiLink(SiteLink siteLink) {
 
-        LOGGER.info("Fetching Description from Wikipedia");
+        log.info("Fetching Description from Wikipedia");
 
         ObjectMapper mapper = new ObjectMapper();
         String description = "";
@@ -118,7 +117,7 @@ public class WikiDataDAOImpl implements WikiDataDAO {
         try {
             /*.replace(" ", "%20")*/
             final String uri = apiUrl + siteLink.getTitle();
-            LOGGER.info("Wikipedia API being called: " + uri);
+            log.info("Wikipedia API being called: " + uri);
 
             ResponseEntity<String> response = restTemplate.exchange(
                     uri, HttpMethod.GET, null,

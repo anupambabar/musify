@@ -138,6 +138,12 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
+        <!-- kstyrc For Embeded Redis Client for Integration Testing-->
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+        </dependency>
         <!-- Caching Framework dependencies End -->
 
         <!-- Misc dependencies Start -->

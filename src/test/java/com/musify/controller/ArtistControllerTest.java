@@ -2,7 +2,7 @@ package com.musify.controller;
 
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
-import com.musify.service.RedisService;
+import com.musify.service.impl.RedisServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ class ArtistControllerTest {
     @MockBean
     ArtistDetailsService artistDetailsService;
     @MockBean
-    RedisService redisService;
+    RedisServiceImpl redisService;
     @Autowired
     private MockMvc mockMvc;
 
