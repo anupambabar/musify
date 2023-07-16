@@ -1,0 +1,39 @@
+version: '3.8'
+
+networks:
+  network:
+    driver: bridge
+    name: musify-network
+
+services:
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin-slim
+    hostname: zipkin-server
+    ports:
+      - "9411:9411"
+    restart: always
+    networks:
+      - network
+
+  redis:
+    container_name: redis
+    image: redis
+    hostname: redis-server
+    ports:
+      - "6379:6379"
+    networks:
+      - network
+
+  musify:
+    container_name: musify
+    image: musify
+    build: .
+    links:
+      - redis
+    ports:
+      - "8081:8081"
+    volumes:
+      - ~/docker/redis:/musify/logs
+    networks:
+      - network

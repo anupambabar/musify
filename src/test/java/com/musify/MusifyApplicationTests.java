@@ -1,9 +1,9 @@
 package com.musify;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
-@SpringBootTest(classes = MusifyApplicationTests.class)
+@WebMvcTest(MusifyApplicationTests.class)
 class MusifyApplicationTests {
 
     @Test

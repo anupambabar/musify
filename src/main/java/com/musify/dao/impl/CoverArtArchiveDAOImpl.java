@@ -7,8 +7,8 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.dto.musicbrainz.ReleaseGroup;
 import com.musify.entity.Album;
 import com.musify.entity.Artist;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
     @Autowired
     RestTemplate restTemplate;
 
@@ -33,9 +33,10 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
     private String apiUrl;
 
     @Override
+    @CircuitBreaker(name = "musifycircuitbreakerclient")
     public Artist getAlbumCoverArtDetails(Artist artist, MusicBrainzResponse mbResponse) {
 
-        LOGGER.info("Fetching Album Cover Art Details from Cover Art Archive");
+        log.info("Fetching Album Cover Art Details from Cover Art Archive");
 
         ArrayList<Image> images = new ArrayList<Image>();
         String imageUrl = "";
@@ -66,7 +67,7 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
 
     private Album getCoverArtArchiveDetails(ReleaseGroup releaseGroup) {
 
-        LOGGER.info("Fetching Album Image Details from Cover Art Archive");
+        log.info("Fetching Album Image Details from Cover Art Archive");
 
         ArrayList<Image> images = new ArrayList<Image>();
         String imageUrl = "";
@@ -74,7 +75,7 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
 
         try {
             final String uri = apiUrl + releaseGroup.getId();
-            LOGGER.info("Cover Art Archive API being called: " + uri);
+            log.info("Cover Art Archive API being called: " + uri);
 
             ResponseEntity<CoverArtArchiveResponse> response = restTemplate.exchange(
                     uri, HttpMethod.GET, null,
@@ -93,8 +94,8 @@ public class CoverArtArchiveDAOImpl implements CoverArtArchiveDAO {
 
         } catch (HttpStatusCodeException e) {
 
-            LOGGER.info("Error Occurred while Fetching Album Image Details from Cover Art Archive.");
-            LOGGER.info("Error Log: " + e.getMessage());
+            log.info("Error Occurred while Fetching Album Image Details from Cover Art Archive.");
+            log.info("Error Log: " + e.getMessage());
 
             if ("404".equals(e.getRawStatusCode())) {
                 album.setImageUrl("No cover art found");
