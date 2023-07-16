@@ -58,25 +58,25 @@ Project to get information on Artists and their work!
 
 `  5. OpenAPI URL for Documentation -> http://localhost:8081/musify-openapi-docs`
 
-# build docker container:
+# Build docker container:
 
 Assuming you have docker installed on your system, navigate to root directory of project and execute command  
-`docker build -f Dockerfile -t musify:test .`
-
-# Run the container:
-
-`docker run -p 8081:8081 musify:test`
+`docker-compose up -d --build`
 
 # Check if the API came up
 
+Check containers status (Check status for musify, redis and zipkin - It should be 'Up')
+`docker-compose ps`
+
+Run the API url
 `localhost:8081/musify/music-artist/details/f27ec8db-af05-4f36-916e-3d57f91ecf5e`   
 
 # Docker stop Container
 
 List all running contaniers  
-`docker ps`  
+`docker-compose ps`  
 Stop the container that you want  
-`docker stop musify`  
+`docker-compose stop musify`  
 
 # Sample MBIDs to Test
 `65f4f0c5-ef9e-490c-aee3-909e7ae6b2ab`
