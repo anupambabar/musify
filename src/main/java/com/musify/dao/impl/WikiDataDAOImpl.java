@@ -56,6 +56,26 @@ public class WikiDataDAOImpl implements WikiDataDAO {
         return artist;
     }
 
+    @Override
+    public String getArtistDescriptionFromWD(MusicBrainzResponse mbResponse) {
+        log.info("Get Artist Wiki Details");
+
+        // Get Artist WikiData Relation
+        Relation relation = getArtistWikiDataRelation(mbResponse);
+
+        // Get entityId
+        String entityId = relation.getUrl().getResource().substring(relation.getUrl().getResource().lastIndexOf('/') + 1);
+
+        // Get Artist WikiData URL
+        String wikiDataAPIUrl = getWIkiDataAPIURL(relation, entityId);
+
+        // Get SiteLink Data
+        SiteLink siteLink = getSiteLinkData(wikiDataAPIUrl, entityId);
+
+        // return Description
+        return getDescFromWikiLink(siteLink);
+    }
+
     private Relation getArtistWikiDataRelation(MusicBrainzResponse mbResponse) {
 
         log.info("Fetching WikiData Relation");

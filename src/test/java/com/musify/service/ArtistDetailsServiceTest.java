@@ -7,6 +7,9 @@ import com.musify.dto.musicbrainz.MusicBrainzResponse;
 import com.musify.entity.Album;
 import com.musify.entity.Artist;
 import com.musify.service.impl.ArtistDetailsServiceImpl;
+import com.musify.service.impl.AuthServiceImpl;
+import com.musify.service.impl.JWTServiceImpl;
+import com.musify.service.impl.UserServiceImpl;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,12 @@ class ArtistDetailsServiceTest {
     CoverArtArchiveDAOImpl coverArtArchiveDAO;
     @MockBean
     RedisService redisService;
+    @MockBean
+    AuthServiceImpl authService;
+    @MockBean
+    JWTServiceImpl jwtService;
+    @MockBean
+    private UserServiceImpl userService;
 
     private String mbid;
     private MusicBrainzResponse mbResponse;

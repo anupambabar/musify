@@ -22,12 +22,11 @@ import java.util.concurrent.*;
 @Service
 public class ArtistDetailsServiceImpl implements ArtistDetailsService {
 
+    private static final int count = 0;
     @Autowired
     MusicBrainzDAO musicBrainzDAO;
-
     @Autowired
     WikiDataDAO wikiDataDAO;
-
     @Autowired
     CoverArtArchiveDAO coverArtArchiveDAO;
 

@@ -2,7 +2,10 @@ package com.musify.exception;
 
 import com.musify.controller.ArtistController;
 import com.musify.service.ArtistDetailsService;
-import com.musify.service.RedisService;
+import com.musify.service.impl.AuthServiceImpl;
+import com.musify.service.impl.JWTServiceImpl;
+import com.musify.service.impl.RedisServiceImpl;
+import com.musify.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +28,13 @@ class RestExceptionHandlerTest {
     @MockBean
     ArtistDetailsService artistDetailsService;
     @MockBean
-    RedisService redisService;
+    RedisServiceImpl redisService;
+    @MockBean
+    AuthServiceImpl authService;
+    @MockBean
+    JWTServiceImpl jwtService;
+    @MockBean
+    private UserServiceImpl userService;
     @MockBean
     private ArtistController artistController;
     @Autowired

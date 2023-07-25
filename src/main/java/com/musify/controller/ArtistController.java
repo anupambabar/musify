@@ -4,6 +4,7 @@ import brave.sampler.Sampler;
 import com.musify.entity.Artist;
 import com.musify.service.ArtistDetailsService;
 import com.musify.service.RedisService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/musify/music-artist")
+@RequiredArgsConstructor
 public class ArtistController {
 
     @Autowired
